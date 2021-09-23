@@ -1,13 +1,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from rest.views import Index, PostViewSet
-    # PostList, PostDetails
+from rest.views import Index, PostViewSet, UserViewSet
+
+# PostList, PostDetails
 
 # post_list, post_details
 
 router = DefaultRouter()
 router.register('posts', PostViewSet, basename='posts')
+router.register('users', UserViewSet, basename='users')
 
 urlpatterns=[
     path('', Index),

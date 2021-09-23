@@ -1,3 +1,4 @@
+
 from django.http import JsonResponse
 from django.shortcuts import render, HttpResponse
 # Create your views here.
@@ -8,6 +9,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from rest.models import Post
+
 from rest.serializers import PostSerializer
 from rest_framework.decorators import api_view
 from rest_framework.decorators import APIView
@@ -203,7 +205,26 @@ class PostViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateM
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 '''
-
+from rest.permissions import IsAuthorOrReadOnly, IsAuthor
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
+    authentication_classes = (TokenAuthentication,)
+
+    def perform_create(self, serializer):
+        # when a product is saved, its saved how it is the owner
+        serializer.save(author=self.request.user)
+
+    def get_queryset(self):
+        # after get all products on DB it will be filtered by its owner and return the queryset
+        author_queryset = self.queryset.filter(author=self.request.user)
+        return author_queryset
+
+from django.contrib.auth.models import User
+from rest.serializers import UserSerilizer
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerilizer
